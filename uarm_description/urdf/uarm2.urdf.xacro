@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="uArm">
+
+  <property name="M_PI" value="3.14159265" />
+
+  <xacro:macro name="uArm" params="prefix parent *origin">
+
+    <joint name="${prefix}base_fix" type="fixed" >
+      <insert_block name="origin" />
+      <parent link="${parent}" />
+      <child link="${prefix}base_link" />
+    </joint>
+
+    <link name="${prefix}base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://uarm_description/meshes/arm/base.dae"/>
+      </geometry>
+    </visual>
+    </link>
+
+    <joint name="${prefix}joint_0" type="revolute">
+    <origin xyz="0 0 0.03" rpy="0 0 0"/> 
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}link_0"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
+
+    <link name="${prefix}link_0"> 
+    <visual>
+      <geometry>
+        <mesh filename="package://uarm_description/meshes/arm/link0.dae"/>
+      </geometry>
+    </visual>  
+    </link>
+
+    <joint name="${prefix}joint_1" type="revolute">
+    <origin xyz="0.02 0 0.07" rpy="${-M_PI/2} 0 0"/> 
+      <parent link="${prefix}link_0"/>
+      <child link="${prefix}link_1"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
+
+    <link name="${prefix}link_1">
+    <visual>
+      <geometry>
+        <mesh filename="package://uarm_description/meshes/arm/link1.dae"/>
+      </geometry>
+    </visual>    
+    </link>
+
+    <joint name="${prefix}joint_2" type="revolute">
+    <origin xyz="0.15 0 0" rpy="0 0 0"/> 
+      <parent link="${prefix}link_1"/>
+      <child link="${prefix}link_2"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
+
+    <link name="${prefix}link_2">
+    <visual>
+      <geometry>
+        <mesh filename="package://uarm_description/meshes/arm/link2.dae"/>
+      </geometry>
+    </visual>  
+    </link>
+
+    <joint name="${prefix}mimic_joint_1" type="revolute">
+    <origin xyz="0.16 0 0" rpy="0 0 0"/> 
+      <parent link="${prefix}link_2"/>
+      <child link="${prefix}virtual_link_2"/>
+      <mimic joint="${prefix}joint_1" multiplier="-1"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
+
+    <link name="${prefix}virtual_link_2">    
+    </link>
+
+    <joint name="${prefix}mimic_joint_2" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+      <parent link="${prefix}virtual_link_2"/>
+      <child link="${prefix}link_3"/>
+      <mimic joint="${prefix}joint_2" multiplier="-1"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
+
+    <link name="${prefix}link_3">
+    <visual>
+      <geometry>
+        <mesh filename="package://uarm_description/meshes/arm/link3.dae"/>
+      </geometry>
+    </visual>   
+    </link>
+
+    <joint name="${prefix}joint_3" type="revolute">
+    <origin xyz="0.03 0.01 0" rpy="${-M_PI/2} 0 0"/> 
+      <parent link="${prefix}link_3"/>
+      <child link="${prefix}link_4"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
+
+    <link name="${prefix}link_4"> 
+    <visual>
+      <geometry>
+        <mesh filename="package://uarm_description/meshes/arm/tool.dae"/>
+      </geometry>
+    </visual>     
+    </link>
+
+    <joint name="${prefix}joint_4" type="fixed">
+    <origin xyz="0 0 0.03" rpy="0 0 0"/> 
+      <parent link="${prefix}link_4"/>
+      <child link="${prefix}tcp"/>
+    </joint>
+
+    <link name="${prefix}tcp">     
+    </link>
+
+  </xacro:macro>
+
+  <!-- TODO REMOVE THIS -->
+  <!-- arm -->
+  <link name="world"/>
+  <xacro:uArm prefix="" parent="world">
+  <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:uArm>
+
+</robot>

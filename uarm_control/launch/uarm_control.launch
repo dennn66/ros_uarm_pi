@@ -1,0 +1,9 @@
+<launch>
+
+  <param name="joint_upper_limit" type="double" value="1.5" />
+  <param name="joint_lower_limit" type="double" value="-1.5" />
+
+  <node name="ros_pca9685" pkg="ros_pca9685" type="controller_sub"/>
+
+</launch>
+
