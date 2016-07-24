@@ -17,8 +17,8 @@
 #define RELEASE					0x02
 
 /*****************  Port definitions  *****************/
-#define SERVO_R        2
-#define SERVO_L        1
+#define SERVO_R        1
+#define SERVO_L        2
 #define SERVO_ROT      3
 #define SERVO_HAND     4
 #define SERVO_HAND_ROT 5 

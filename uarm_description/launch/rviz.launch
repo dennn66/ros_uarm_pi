@@ -1,3 +1,11 @@
 <launch>
+<remap from="joint_states" to="uarm/uarm_joint_publisher"/>
+   <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find uarm_description)/urdf/robot.urdf.xacro'" />
+
+   <param name="robot_description" command="$(arg urdf_file)" />
+   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find uarm_description)/rviz/model.rviz"/>
+
 </launch>
+

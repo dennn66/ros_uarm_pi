@@ -45,7 +45,8 @@ ROS_INFO(" servoL  grd %f",  servoL);
     position[4] = uarm_jnts->angle_grip;
     
  
-    for(int port = 0; port < N_CHANNELS; port++){
+//    for(int port = 0; port < N_CHANNELS; port++){
+    for(int port = 0; port < 2; port++){
         msg.port_num = channels[port];  //SERVO_ROT
         msg.servo_rot = position[port];
         msg.servo_type =  servo_type[port];

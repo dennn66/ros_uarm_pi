@@ -31,6 +31,7 @@ void chatterJointsState (const JointsStateConstPtr& state){
         positions[5] = - state->angle_grip; //"palm_left_finger_j"
         positions[6] = state->angle_grip; //"palm_right_finger_j"
 
+	joint_msg.header.stamp = ros::Time::now();
 
 	for (int name=0; name<7; name++){
 			joint_msg.name.push_back(joints[name].c_str());

@@ -7,5 +7,5 @@ They receives data from the topic `/uarm/joints_to_controller`, that contains th
 Test
 ======
 ```
-rostopic pub /uarm/joints_to_controller uarm_msgs/Joints '{angle_r: 0.581789, angle_l: 1.941941, angle_rot: 0.0, hand_rot: 0.0, angle_grip: 0.0}' --once
+rostopic pub /uarm/joints_to_controller uarm_msgs/Joints '{angle_r: 0.581789, angle_l: 1.941941, angle_rot: 0.0, angle_hand_rot: 0.0, angle_grip: 0.0}' --once
 ```
