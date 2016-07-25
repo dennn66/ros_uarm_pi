@@ -34,7 +34,7 @@
     </link>
 
     <joint name="body_upper_arm_j" type="continuous">
-      <origin xyz="0.069 0 0.021" rpy="-${M_PI/2+0.624} 0 ${-M_PI/2}"/>
+      <origin xyz="0.069 0 0.021" rpy=-3 0 ${-M_PI/2}"/>
       <parent link="uarm_body_link"/>
       <child link="uarm_upper_arm_link"/>
     </joint>
@@ -52,7 +52,7 @@
 
 
     <joint name="upper_arm_forearm_j" type="continuous">
-      <origin xyz="0 0.048 0.138 " rpy="${2.87} 0 0"/>
+      <origin xyz="0 0.048 0.138 " rpy="1.052 0 0"/>
       <parent link="uarm_upper_arm_link"/>
       <child link="uarm_forearm_link"/>
     </joint>
@@ -71,7 +71,7 @@
     </link>
 
     <joint name="forearm_wrist_j" type="continuous">
-      <origin xyz="0 -0.145 -0.068" rpy="${0.624-2.87} 0 0"/>
+      <origin xyz="0 -0.145 -0.068" rpy="-2.8 0 0"/>
       <parent link="uarm_forearm_link"/>
       <child link="uarm_wrist_link"/>
     </joint>

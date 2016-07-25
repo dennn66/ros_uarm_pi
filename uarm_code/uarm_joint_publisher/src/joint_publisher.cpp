@@ -25,7 +25,7 @@ void chatterJointsState (const JointsStateConstPtr& state){
 
 	positions[0] = state->angle_rot; //"base_body_j"
         positions[1] = 3.141592654 - state->angle_l; //"body_upper_arm_j",
-        positions[2] = 3.141592654 - state->angle_l - state->angle_r;; //"upper_arm_forearm_j"
+        positions[2] = -(3.141592654 - state->angle_l - state->angle_r);; //"upper_arm_forearm_j"
         positions[3] = 3.141592654 - state->angle_r; //"forearm_wrist_j"
         positions[4] = state->angle_hand_rot; //"wrist_palm_j"
         positions[5] = - state->angle_grip; //"palm_left_finger_j"
