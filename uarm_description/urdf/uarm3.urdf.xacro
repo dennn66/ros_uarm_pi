@@ -47,7 +47,7 @@
       <origin xyz="0 0 0" rpy="0 ${-M_PI/2} 0"/>
       <parent link="uarm_base_link"/>
       <child link="uarm_body_link"/>
-      <axis xyz="0 0 -1" />
+      <axis xyz="1 0 0" />
       <limit lower="${joint_lower_limit}" upper="${joint_upper_limit}" effort="${joint_effort}" velocity="${joint_velocity}" />
     </joint>
     
@@ -78,7 +78,7 @@
       <origin xyz="0.069 0 0.021" rpy="-3 0 ${-M_PI/2}"/>
       <parent link="uarm_body_link"/>
       <child link="uarm_upper_arm_link"/>
-      <axis xyz="0 0 -1" />
+      <axis xyz="1 0 0" />
       <limit lower="${joint_lower_limit}" upper="${joint_upper_limit}" effort="${joint_effort}" velocity="${joint_velocity}" />
     </joint>
 
@@ -110,7 +110,7 @@
       <origin xyz="0 0.048 0.138 " rpy="1.052 0 0"/>
       <parent link="uarm_upper_arm_link"/>
       <child link="uarm_forearm_link"/>
-	  <axis xyz="0 0 1" />
+	  <axis xyz="1 0 0" />
 	  <limit lower="${joint_lower_limit}" upper="${joint_upper_limit}" effort="${joint_effort}" velocity="${joint_velocity}" />
     </joint>
 

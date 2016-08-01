@@ -50,15 +50,12 @@ target_link_libraries(uarm_ik_solver ${catkin_LIBRARIES})
 add_executable(uarm_kinematics src/uarm_kinematics.cpp)
 target_link_libraries(uarm_kinematics uarm_ik_solver ${catkin_LIBRARIES})
 
-add_executable(uarm_kinematics_pub src/uarm_kinematics_pub.cpp)
-target_link_libraries(uarm_kinematics_pub uarm_ik_solver ${catkin_LIBRARIES})
-
 add_executable(uarm_ik_service src/uarm_ik_service.cpp)
 target_link_libraries(uarm_ik_service uarm_ik_solver ${catkin_LIBRARIES})
 
 
 install(
-	TARGETS uarm_kinematics uarm_kinematics_pub uarm_ik_service uarm_ik_solver
+	TARGETS uarm_kinematics uarm_ik_service uarm_ik_solver
 	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
