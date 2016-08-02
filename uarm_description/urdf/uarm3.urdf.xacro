@@ -10,6 +10,8 @@
     <xacro:property name="joint_effort" value="10000" />
     <xacro:property name="joint_velocity" value="100" />
 
+    <xacro:property name="joint_upper_arm_offset" value="-0.85"/>
+    <xacro:property name="joint_forearm_offset" value="-0.30" />
 
  <!-- uArm description -->
   <xacro:macro name="uarm" params="parent  color *origin">
@@ -58,24 +60,24 @@
           <inertia 	ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
       </inertial>
       <visual>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
+       <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" /> 
         <geometry>
-            <mesh filename="package://uarm_description/meshes/uarm_body.stl" scale="0.001 0.001 0.001"/>
+            <mesh filename="package://uarm_description/meshes/uarm_body.stl" scale="0.001 0.001 0.001"/> 
         </geometry>
             <material name="">
                  <color rgba="0.7 0.7 0 1" />
             </material>      
 	  </visual>
 	  <collision>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
+        <origin xyz="0.032 0 0" rpy="0 ${M_PI/2} 0" />
 		<geometry>
-			 <mesh filename="package://uarm_description/meshes/uarm_body.stl" scale="0.001 0.001 0.001"/>
+			 <box size="0.1 0.1 0.035" />
 		</geometry>
       </collision>
     </link>
 	
     <joint name="body_upper_arm_j" type="revolute">
-      <origin xyz="0.069 0 0.021" rpy="-3 0 ${-M_PI/2}"/>
+      <origin xyz="0.069 0 0.021" rpy="${joint_upper_arm_offset} 0 ${-M_PI/2}"/>
       <parent link="uarm_body_link"/>
       <child link="uarm_upper_arm_link"/>
       <axis xyz="1 0 0" />
@@ -107,7 +109,7 @@
     </link>
 	
     <joint name="upper_arm_forearm_j" type="revolute">
-      <origin xyz="0 0.048 0.138 " rpy="1.052 0 0"/>
+      <origin xyz="0 0.048 0.138 " rpy="${joint_forearm_offset} 0 0"/>
       <parent link="uarm_upper_arm_link"/>
       <child link="uarm_forearm_link"/>
 	  <axis xyz="1 0 0" />
@@ -136,11 +138,33 @@
 		</geometry>
 	  </collision>	  
    </link>
-	
+<!--	
     <joint name="forearm_wrist_j" type="continuous">
       <origin xyz="0 -0.145 -0.068" rpy="-2.8 0 0"/>
       <parent link="uarm_forearm_link"/>
       <child link="uarm_wrist_link"/>
+    </joint>
+-->
+
+    <joint name="mimic_joint_1" type="revolute">
+    <origin xyz="0 -0.145 -0.068" rpy="${-joint_upper_arm_offset-joint_forearm_offset-1.58} 0 0"/>
+      <parent link="uarm_forearm_link"/>
+      <child link="virtual_link_2"/>
+      <mimic joint="body_upper_arm_j" multiplier="-1"/>
+      <axis xyz="1 0 0"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
+
+    <link name="virtual_link_2">    
+    </link>
+
+    <joint name="mimic_joint_2" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+      <parent link="virtual_link_2"/>
+      <child link="uarm_wrist_link"/>
+      <mimic joint="upper_arm_forearm_j" multiplier="-1"/>
+      <axis xyz="1 0 0"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
     </joint>
 
 
@@ -158,10 +182,11 @@
     </link>
 
 
-    <joint name="wrist_palm_j" type="continuous">
+    <joint name="wrist_palm_j" type="revolute">
       <origin xyz="0.0022 -0.036 -0.011" rpy=" ${-M_PI/2} ${M_PI/2} 0"/>
       <parent link="uarm_wrist_link"/>
       <child link="uarm_palm_link"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI/2}" upper="${M_PI/2}"/>
     </joint>
 
 
@@ -178,10 +203,12 @@
     </link>
 
 
-    <joint name="palm_left_finger_j" type="continuous">
+    <joint name="palm_left_finger_j" type="revolute">
       <origin xyz="0.035 -0.008 0 " rpy="0 ${M_PI/2} 0"/>
       <parent link="uarm_palm_link"/>
       <child link="uarm_left_finger_link"/>
+      <limit effort="200" velocity="1.9634" lower="0" upper="0.40"/>
+
     </joint>
 
 
@@ -197,10 +224,13 @@
       </visual>
     </link>
 
-    <joint name="palm_right_finger_j" type="continuous">
+    <joint name="palm_right_finger_j" type="revolute">
       <origin xyz="0.035 0.008 0" rpy="0 ${M_PI/2} 0"/>
       <parent link="uarm_palm_link"/>
       <child link="uarm_right_finger_link"/>
+      <mimic joint="palm_left_finger_j" multiplier="-1"/>
+      <limit effort="200" velocity="1.9634" lower="-0.4" upper="0"/>
+
     </joint>
 
     <link name="uarm_right_finger_link">
