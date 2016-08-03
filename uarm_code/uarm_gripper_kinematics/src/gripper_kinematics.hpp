@@ -33,6 +33,12 @@
 #define CATCH					0x01
 #define RELEASE					0x02
 
+#define FIXED_OFFSET_L          0.314159265
+#define FIXED_OFFSET_R          0.628318531
+
+#define INIT_POS_L              0.645771823
+#define INIT_POS_R              0.436332313
+
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 class Gripper {
@@ -52,6 +58,9 @@ class Gripper {
                 void setPosition(double _stretch, double _height, double _armRot, double _handRot); // 
 		void publishJoints();    //
 
+/*******************  Servo offset  *******************/
+	double offsetL;
+	double offsetR;
 	/*****************  Define variables  *****************/
 
 	bool gripperState;

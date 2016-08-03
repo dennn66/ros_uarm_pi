@@ -8,11 +8,6 @@
 #include <uarm_msgs/Joints.h>
 
 /****************  Macro definitions  ****************/
-#define FIXED_OFFSET_L          0.314159265
-#define FIXED_OFFSET_R          0.628318531
-
-#define INIT_POS_L              0.645771823
-#define INIT_POS_R              0.436332313
 #define CATCH					0x01
 #define RELEASE					0x02
 
@@ -44,9 +39,6 @@ class Controller {
 
                 void chatterJointsState (const uarm_msgs::JointsConstPtr &uarm_jnts);
 
-/*******************  Servo offset  *******************/
-	double offsetL;
-	double offsetR;
 	/*****************  Define variables  *****************/
 };
 
