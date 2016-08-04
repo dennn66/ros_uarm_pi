@@ -1,5 +1,5 @@
 <launch>
-   <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find uarm_description)/urdf/robot.urdf.xacro'" />
+   <arg name="urdf_file" default="$(find xacro)/xacro '$(find uarm_description)/urdf/robot.urdf.xacro'" />
    <param name="robot_description" command="$(arg urdf_file)" />
 
   <param name="joint_upper_limit" type="double" value="1.5" />

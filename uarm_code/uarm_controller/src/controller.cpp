@@ -16,6 +16,10 @@ Controller::Controller(){
     servo_type[3] =  pca9685_msgs::ServoState::D009A;
     servo_type[4] =  pca9685_msgs::ServoState::D009A;
 
+
+        node.param("offsetL", offsetL, 0.314696417);
+        node.param("offsetR", offsetR, -0.139311164);
+
 	sub_joints_position = node.subscribe("uarm/joints_to_controller", 100, &Controller::chatterJointsState, this);
 
 	pub_servo_position = node.advertise<pca9685_msgs::ServoState>("pca9685/servostate_to_controller", 100);
@@ -27,8 +31,8 @@ void Controller::chatterJointsState (const uarm_msgs::JointsConstPtr &uarm_jnts)
     ROS_INFO("Recieved uarm position");
     pca9685_msgs::ServoState msg;
 
-    position[0] = uarm_jnts->angle_r;
-    position[1] = uarm_jnts->angle_l;
+    position[0] = uarm_jnts->angle_r+offsetR;
+    position[1] = uarm_jnts->angle_l+offsetL;
     position[2] = uarm_jnts->angle_rot;
     position[3] = uarm_jnts->angle_hand_rot;
     position[4] = uarm_jnts->angle_grip;

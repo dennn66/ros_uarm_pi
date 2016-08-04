@@ -58,9 +58,6 @@ class Gripper {
                 void setPosition(double _stretch, double _height, double _armRot, double _handRot); // 
 		void publishJoints();    //
 
-/*******************  Servo offset  *******************/
-	double offsetL;
-	double offsetR;
 	/*****************  Define variables  *****************/
 
 	bool gripperState;

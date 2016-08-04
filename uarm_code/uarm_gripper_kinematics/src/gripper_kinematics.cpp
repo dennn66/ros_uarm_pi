@@ -15,9 +15,6 @@ Gripper::Gripper(){
 	sub_gripper_position = node.subscribe("uarm/set_gripper_position", 10, &Gripper::chatterGripperPosition, this);
         sub_gripper_state = node.subscribe("uarm/set_gripper_state", 10, &Gripper::chatterGripperState, this);
 
-        node.param("offsetL", offsetL, 0.314696417);
-        node.param("offsetR", offsetR, -0.139311164);
-
 	pub_joints_position = node.advertise<uarm_msgs::Joints>("uarm/joints_to_controller", 100);
 	ros::Duration(1).sleep(); // optional, to make sure no message gets lost
 	ROS_INFO("Servo controller is ready...");
@@ -68,7 +65,7 @@ ROS_INFO(" angleC  rad %f", angleC );
 ROS_INFO(" angleR  rad %f",  angleR);
 
 	angleL = angleB + angleC;                       // 
-ROS_INFO(" angleL  grd %f",  angleL);
+ROS_INFO(" angleL  rad %f",  angleL);
 
         publishJoints();
 }
@@ -85,18 +82,18 @@ void Gripper::publishJoints()
         msg.angle_grip = HAND_ANGLE_OPEN - 1.570796327;
     }
 
-    double servoR =  angleR + FIXED_OFFSET_R + offsetR - 1.570796327;        //
+    double servoR =  angleR + FIXED_OFFSET_R - 1.570796327;        //
 ROS_INFO(" servoR  rad %f",  servoR);
 
-    double servoL =  angleL + FIXED_OFFSET_L + offsetL - 1.570796327;                       //
-ROS_INFO(" servoL  grd %f",  servoL);
+    double servoL =  angleL + FIXED_OFFSET_L - 1.570796327;                       //
+ROS_INFO(" servoL  rad %f",  servoL);
 
     msg.angle_rot = armRot;
     msg.angle_hand_rot = handRot;
     msg.angle_r = servoR;
     msg.angle_l = servoL;
     ROS_INFO("AngleR %f, AngleL %f, ArmRot %f, HandRot %f, gripper %f",
-                        angleR, angleL,armRot,handRot, msg.angle_grip );
+                        servoR, servoL,armRot,handRot, msg.angle_grip );
     pub_joints_position.publish(msg);
 }
 

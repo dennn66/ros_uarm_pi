@@ -39,7 +39,10 @@ class Controller {
 
                 void chatterJointsState (const uarm_msgs::JointsConstPtr &uarm_jnts);
 
-	/*****************  Define variables  *****************/
+/*******************  Servo offset  *******************/
+        double offsetL;
+        double offsetR;
+ 	/*****************  Define variables  *****************/
 };
 
 
