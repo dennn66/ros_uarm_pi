@@ -4,7 +4,7 @@
 
 typedef boost::shared_ptr<uarm_msgs::Joints const> JointsStateConstPtr;
 
-float positions[5] = {0.0};
+float positions[5];
 
 const std::string  joints[5] = {"base_body_j",
 "body_upper_arm_j",
@@ -31,7 +31,7 @@ void chatterJointsState (const JointsStateConstPtr& state){
 
 	joint_msg.header.stamp = ros::Time::now();
 
-	for (int name=0; name<7; name++){
+	for (int name=0; name<5; name++){
 			joint_msg.name.push_back(joints[name].c_str());
 			joint_msg.position.push_back(positions[name]);
 	}

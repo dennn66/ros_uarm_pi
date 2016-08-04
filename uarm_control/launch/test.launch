@@ -1,0 +1,7 @@
+<launch>
+
+  <node name="uarm_gripper_kinematics" pkg="uarm_gripper_kinematics" type="gripper_kinematics"/>
+  <node name="uarm_controller" pkg="uarm_controller" type="controller"/>
+  <node name="uarm_joint_publisher" pkg="uarm_joint_publisher" type="joint_publisher"/>
+
+</launch>

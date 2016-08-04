@@ -43,8 +43,8 @@ void Gripper::setPosition(double _stretch, double _height, double _armRot, doubl
 	armRot = -_armRot;
 	armRot  = constrain(armRot,  ARM_ROTATION_MIN,  ARM_ROTATION_MAX);
 	handRot = constrain(_handRot, HAND_ROTATION_MIN, HAND_ROTATION_MAX);
-        _stretch = constrain(_stretch, ARM_STRETCH_MIN,   ARM_STRETCH_MAX) + 55;                // +55, set zero -stretch
-        _height  = constrain(_height,  ARM_HEIGHT_MIN,    ARM_HEIGHT_MAX);
+        _stretch = constrain(_stretch, ARM_STRETCH_MIN,   ARM_STRETCH_MAX) + 30 - 35;                // +55, set zero -stretch
+        _height  = constrain(_height,  ARM_HEIGHT_MIN,    ARM_HEIGHT_MAX);                      // + gripper height
 ROS_INFO(" _stretch %f",  _stretch);
 ROS_INFO(" _height %f",  _height);
 
@@ -82,10 +82,10 @@ void Gripper::publishJoints()
         msg.angle_grip = HAND_ANGLE_OPEN - 1.570796327;
     }
 
-    double servoR =  angleR + FIXED_OFFSET_R - 1.570796327;        //
+    double servoR =  (angleR + FIXED_OFFSET_R - 1.570796327);        //
 ROS_INFO(" servoR  rad %f",  servoR);
 
-    double servoL =  angleL + FIXED_OFFSET_L - 1.570796327;                       //
+    double servoL =  (angleL + FIXED_OFFSET_L - 1.570796327);                       //
 ROS_INFO(" servoL  rad %f",  servoL);
 
     msg.angle_rot = armRot;

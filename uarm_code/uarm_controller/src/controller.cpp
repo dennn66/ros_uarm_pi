@@ -17,8 +17,8 @@ Controller::Controller(){
     servo_type[4] =  pca9685_msgs::ServoState::D009A;
 
 
-        node.param("offsetL", offsetL, 0.314696417);
-        node.param("offsetR", offsetR, -0.139311164);
+        node.param("offsetL", offsetL, 0.33);
+        node.param("offsetR", offsetR, -0.20);
 
 	sub_joints_position = node.subscribe("uarm/joints_to_controller", 100, &Controller::chatterJointsState, this);
 
