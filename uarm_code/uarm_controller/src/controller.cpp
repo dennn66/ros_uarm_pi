@@ -20,7 +20,7 @@ Controller::Controller(){
         node.param("offsetL", offsetL, 0.33);
         node.param("offsetR", offsetR, -0.20);
 
-	sub_joints_position = node.subscribe("uarm/joints_to_controller", 100, &Controller::chatterJointsState, this);
+	sub_joints_position = node.subscribe("uarm/target_position", 100, &Controller::chatterJointsState, this);
 
 	pub_servo_position = node.advertise<pca9685_msgs::ServoState>("pca9685/servostate_to_controller", 100);
 	ros::Duration(1).sleep(); // optional, to make sure no message gets lost
@@ -38,9 +38,8 @@ void Controller::chatterJointsState (const uarm_msgs::JointsConstPtr &uarm_jnts)
     position[4] = uarm_jnts->angle_grip;
     
  
-//    for(int port = 0; port < N_CHANNELS; port++){
-    for(int port = 0; port < 2; port++){
-        msg.port_num = channels[port];  //SERVO_ROT
+    for(int port = 0; port < N_CHANNELS; port++){
+        msg.port_num = channels[port];  
         msg.servo_rot = position[port];
         msg.servo_type =  servo_type[port];
         ROS_INFO("Servo %d [%f]",  channels[port], position[port]);
@@ -51,7 +50,7 @@ void Controller::chatterJointsState (const uarm_msgs::JointsConstPtr &uarm_jnts)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "controller");
+    ros::init(argc, argv, "uarm_controller");
     Controller c;
     ros::spin();
 }

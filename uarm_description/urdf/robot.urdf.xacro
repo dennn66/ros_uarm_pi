@@ -3,7 +3,7 @@
 
   <!-- The following included files set up definitions of parts of the robot body -->
 <xacro:property name="M_PI" value="3.1415926535897931" />
-  <xacro:include filename="$(find uarm_description)/urdf/uarm3.urdf.xacro" />
+  <xacro:include filename="$(find uarm_description)/urdf/uarm.urdf.xacro" />
 
 <!--
   <xacro:include filename="$(find uarm_description)/urdf/camera.urdf.xacro" />

@@ -15,7 +15,7 @@ Gripper::Gripper(){
 	sub_gripper_position = node.subscribe("uarm/set_gripper_position", 10, &Gripper::chatterGripperPosition, this);
         sub_gripper_state = node.subscribe("uarm/set_gripper_state", 10, &Gripper::chatterGripperState, this);
 
-	pub_joints_position = node.advertise<uarm_msgs::Joints>("uarm/joints_to_controller", 100);
+	pub_joints_position = node.advertise<uarm_msgs::Joints>("uarm/target_position", 100);
 	ros::Duration(1).sleep(); // optional, to make sure no message gets lost
 	ROS_INFO("Servo controller is ready...");
 }
@@ -45,27 +45,27 @@ void Gripper::setPosition(double _stretch, double _height, double _armRot, doubl
 	handRot = constrain(_handRot, HAND_ROTATION_MIN, HAND_ROTATION_MAX);
         _stretch = constrain(_stretch, ARM_STRETCH_MIN,   ARM_STRETCH_MAX) + 30 - 35;                // +55, set zero -stretch
         _height  = constrain(_height,  ARM_HEIGHT_MIN,    ARM_HEIGHT_MAX);                      // + gripper height
-ROS_INFO(" _stretch %f",  _stretch);
-ROS_INFO(" _height %f",  _height);
+        ROS_INFO(" _stretch %f",  _stretch);
+        ROS_INFO(" _height %f",  _height);
 
 	// angle calculation
 	double stretch2height2 = _stretch * _stretch + _height * _height;              // 
-ROS_INFO("sqrt(stretch2height2)  %f mm", sqrt(stretch2height2));
+        ROS_INFO("sqrt(stretch2height2)  %f mm", sqrt(stretch2height2));
 
 	double angleA = (acos( (ARM_A2B2 - stretch2height2) / ARM_2AB )); // angle between the upper and the lower
-ROS_INFO("angleA rad %f", angleA);
+        ROS_INFO("angleA rad %f", angleA);
 
 	double angleB = (atan(_height/_stretch)) ;                         // 
-ROS_INFO("angleB rad %f", angleB );
+        ROS_INFO("angleB rad %f", angleB );
 
 	double angleC = acos((ARM_A2 + stretch2height2 -ARM_B2)/(2 * ARM_A * sqrt(stretch2height2))); // 
-ROS_INFO(" angleC  rad %f", angleC );
+        ROS_INFO(" angleC  rad %f", angleC );
 
 	angleR = 3.141592654  - angleA - angleB - angleC;        // 
-ROS_INFO(" angleR  rad %f",  angleR);
+        ROS_INFO(" angleR  rad %f",  angleR);
 
 	angleL = angleB + angleC;                       // 
-ROS_INFO(" angleL  rad %f",  angleL);
+        ROS_INFO(" angleL  rad %f",  angleL);
 
         publishJoints();
 }
@@ -77,16 +77,16 @@ void Gripper::publishJoints()
 
     if(gripperState)
     {
-        msg.angle_grip = HAND_ANGLE_CLOSE - 1.570796327;
+        msg.angle_grip = HAND_ANGLE_CLOSE;
     } else {
-        msg.angle_grip = HAND_ANGLE_OPEN - 1.570796327;
+        msg.angle_grip = HAND_ANGLE_OPEN;
     }
 
     double servoR =  (angleR + FIXED_OFFSET_R - 1.570796327);        //
-ROS_INFO(" servoR  rad %f",  servoR);
+    ROS_INFO(" servoR  rad %f",  servoR);
 
     double servoL =  (angleL + FIXED_OFFSET_L - 1.570796327);                       //
-ROS_INFO(" servoL  rad %f",  servoL);
+    ROS_INFO(" servoL  rad %f",  servoL);
 
     msg.angle_rot = armRot;
     msg.angle_hand_rot = handRot;
@@ -100,7 +100,7 @@ ROS_INFO(" servoL  rad %f",  servoL);
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "gripper_kinematics");
+    ros::init(argc, argv, "uarm_gripper_kinematics");
     Gripper g;
     ros::spin();
 }

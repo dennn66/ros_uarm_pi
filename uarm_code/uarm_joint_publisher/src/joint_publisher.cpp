@@ -18,7 +18,7 @@ sensor_msgs::JointState joint_msg;
 
 void chatterJointsState (const JointsStateConstPtr& state){
 
-// rostopic pub /uarm/joints_to_controller uarm_msgs/Joints '{angle_r: 0.581789, angle_l: 1.941941, angle_rot: 0.0, 
+// rostopic pub /uarm/target_position uarm_msgs/Joints '{angle_r: 0.581789, angle_l: 1.941941, angle_rot: 0.0, 
 // angle_hand_rot: 0.0, angle_grip: 0.0}' --once
 
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 	joint_msg_pub = node.advertise<sensor_msgs::JointState>("uarm/uarm_joint_publisher", 1);
 //	ros::Rate loop_rate(20);
 
-	ros::Subscriber sub = node.subscribe("uarm/joints_to_controller", 1, chatterJointsState);
+	ros::Subscriber sub = node.subscribe("uarm/target_position", 1, chatterJointsState);
 
 	ros::spin();
 

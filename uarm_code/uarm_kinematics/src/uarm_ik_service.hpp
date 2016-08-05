@@ -32,8 +32,6 @@ class UarmKinematics {
 		bool loadModel(const std::string xml);
 		bool getUarmIKSolver (	uarm_msgs::GetUarmIKSolver::Request &request,
 								uarm_msgs::GetUarmIKSolver::Response &response);
-
-
 };
 
 

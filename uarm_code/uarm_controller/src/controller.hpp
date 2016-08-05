@@ -7,10 +7,6 @@
 #include <pca9685_msgs/ServoState.h>
 #include <uarm_msgs/Joints.h>
 
-/****************  Macro definitions  ****************/
-#define CATCH					0x01
-#define RELEASE					0x02
-
 /*****************  Port definitions  *****************/
 #define SERVO_R        1
 #define SERVO_L        2

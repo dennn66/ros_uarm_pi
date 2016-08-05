@@ -1,6 +1,21 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+<!-- Pi parameter -->
+    <xacro:property name="pi" value="3.1415926535897931" />
+
+<!-- Joint properties -->
+    <xacro:property name="joint_lower_limit" value="-${1.5}" />
+    <xacro:property name="joint_upper_limit" value="${1.5}" />
+    <xacro:property name="joint_effort" value="10000" />
+    <xacro:property name="joint_velocity" value="100" />
+
+    <xacro:property name="joint_left_visual_offset" value="0.35"/> <!-- "+" contr clock   -->
+    <xacro:property name="joint_right_visual_offset" value="-0.35" /> <!-- "-" contr clock   -->
+
+    <xacro:property name="joint_upper_arm_visual_offset" value="${-1.291+joint_left_visual_offset}"/> <!-- "+" contr clock   -->
+    <xacro:property name="joint_forearm_visual_offset" value="${-0.25-joint_left_visual_offset-joint_right_visual_offset}" /> <!-- "+" contr clock   -->
+    <xacro:property name="joint_wrist_visual_offset" value="${joint_right_visual_offset}" /> <!-- "+" contr clock   -->
 
  <!-- uArm description -->
   <xacro:macro name="uarm" params="parent  color *origin">
@@ -9,73 +24,129 @@
       <parent link="${parent}"/>
       <child link="uarm_base_link"/>
     </joint>
+    
     <link name="uarm_base_link">
+      <inertial>
+        <origin xyz="0 0 0" />
+        <mass value="0.01"/>
+        <inertia  ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
             <mesh filename="package://uarm_description/meshes/uarm_base.stl" scale="0.001 0.001 0.001"/>
         </geometry>
-        <material name="${color}" />
-      </visual>
-    </link>
-    <joint name="base_body_j" type="continuous">
-      <origin xyz="0 0 0" rpy="0 ${-M_PI/2} 0"/>
-      <parent link="uarm_base_link"/>
-      <child link="uarm_body_link"/>
-    </joint>
-    <link name="uarm_body_link">
-      <visual>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
-        <geometry>
-            <mesh filename="package://uarm_description/meshes/uarm_body.stl" scale="0.001 0.001 0.001"/>
-        </geometry>
-        <material name="${color}" />
+            <material name="grey">
+                <color rgba="0.5 0.5 0.5 1" />
+            </material>
       </visual>
     </link>
 
-    <joint name="body_upper_arm_j" type="continuous">
-      <origin xyz="0.069 0 0.021" rpy="-3 0 ${-M_PI/2}"/>
+    
+    <joint name="base_body_j" type="revolute">
+      <origin xyz="0 0 0" rpy="0 ${-M_PI/2} 0"/>
+      <parent link="uarm_base_link"/>
+      <child link="uarm_body_link"/>
+      <axis xyz="1 0 0" />
+      <limit lower="${joint_lower_limit}" upper="${joint_upper_limit}" effort="${joint_effort}" velocity="${joint_velocity}" />
+    </joint>
+    
+    <link name="uarm_body_link">
+	  <inertial>
+          <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
+          <mass value="0.01"/>
+          <inertia 	ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      </inertial>
+      <visual>
+       <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" /> 
+        <geometry>
+            <mesh filename="package://uarm_description/meshes/uarm_body.stl" scale="0.001 0.001 0.001"/> 
+        </geometry>
+            <material name="">
+                 <color rgba="0.7 0.7 0 1" />
+            </material>      
+	  </visual>
+	  <collision>
+        <origin xyz="0.032 0 0" rpy="0 ${M_PI/2} 0" />
+		<geometry>
+			 <box size="0.1 0.1 0.035" />
+		</geometry>
+      </collision>
+    </link>
+	
+    <joint name="body_upper_arm_j" type="revolute">
+      <origin xyz="0.069 0 0.021" rpy="${joint_upper_arm_visual_offset} 0 ${-M_PI/2}"/>
       <parent link="uarm_body_link"/>
       <child link="uarm_upper_arm_link"/>
+      <axis xyz="-1 0 0" />
+      <limit lower="${joint_lower_limit}" upper="${joint_upper_limit}" effort="${joint_effort}" velocity="${joint_velocity}" />
     </joint>
 
 
     <link name="uarm_upper_arm_link">
+       <inertial>
+         <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}" />
+         <mass value="0.01"/>
+         <inertia 	ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+       </inertial>
       <visual>
-        <origin xyz="0 0 ${0}" rpy="0 0 ${M_PI/2}" />
+        <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}" />
         <geometry>
             <mesh filename="package://uarm_description/meshes/uarm_upper_arm.stl" scale="0.001 0.001 0.001"/>
         </geometry>
-        <material name="${color}" />
+        <material name="">
+            <color rgba="0 0.7 0.7 1" />
+        </material>
       </visual>
     </link>
 
-
-    <joint name="upper_arm_forearm_j" type="continuous">
-      <origin xyz="0 0.048 0.138 " rpy="1.052 0 0"/>
+    <joint name="mimic_joint_1" type="revolute">
+    <origin xyz="0 0.048 0.138" rpy="${joint_forearm_visual_offset} 0 0"/>
       <parent link="uarm_upper_arm_link"/>
-      <child link="uarm_forearm_link"/>
+      <child link="virtual_link_2"/>
+      <mimic joint="body_upper_arm_j" multiplier="-1"/>
+      <axis xyz="-1 0 0"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
     </joint>
 
+    <link name="virtual_link_2">    
+    </link>
+
+    <joint name="mimic_joint_2" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+      <parent link="virtual_link_2"/>
+      <child link="uarm_forearm_link"/>
+      <mimic joint="forearm_wrist_j" multiplier="-1"/>
+      <axis xyz="-1 0 0"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI}" upper="${M_PI}"/>
+    </joint>
 
 
 
    <link name="uarm_forearm_link">
+	  <inertial>
+		<origin xyz="0 0 0" rpy="0 0 ${M_PI/2}" />
+		<mass value="0.01"/>
+		<inertia 	ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+	  </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}" />
         <geometry>
             <mesh filename="package://uarm_description/meshes/uarm_forearm.stl" scale="0.001 0.001 0.001"/>
-        </geometry>
-        <material name="${color}" />
-      </visual>
-    </link>
-
-    <joint name="forearm_wrist_j" type="continuous">
-      <origin xyz="0 -0.145 -0.068" rpy="-2.8 0 0"/>
+        </geometry>        
+		<material name="">
+			<color rgba="0.7 0 0.7 1" />
+		</material>		
+      </visual> 
+   </link>
+	
+    <joint name="forearm_wrist_j" type="revolute">
+      <origin xyz="0 -0.145 -0.068" rpy="${joint_wrist_visual_offset} 0 0"/>
       <parent link="uarm_forearm_link"/>
       <child link="uarm_wrist_link"/>
+      <axis xyz="-1 0 0"/>
+      <limit effort="200" velocity="1.9634" lower="-1.68" upper="0.95"/>
     </joint>
-
 
 
     <link name="uarm_wrist_link">
@@ -84,15 +155,18 @@
         <geometry>
             <mesh filename="package://uarm_description/meshes/uarm_wrist.stl" scale="0.001 0.001 0.001"/>
         </geometry>
-        <material name="${color}" />
+        <material name="">
+			<color rgba="0.5 0 0.7 1" />
+		</material>	
       </visual>
     </link>
 
 
-    <joint name="wrist_palm_j" type="continuous">
+    <joint name="wrist_palm_j" type="revolute">
       <origin xyz="0.0022 -0.036 -0.011" rpy=" ${-M_PI/2} ${M_PI/2} 0"/>
       <parent link="uarm_wrist_link"/>
       <child link="uarm_palm_link"/>
+      <limit effort="200" velocity="1.9634" lower="-${M_PI/2}" upper="${M_PI/2}"/>
     </joint>
 
 
@@ -102,19 +176,29 @@
         <geometry>
             <mesh filename="package://uarm_description/meshes/uarm_palm.stl" scale="0.001 0.001 0.001"/>
         </geometry>
-        <material name="${color}" />
+        <material name="">
+			<color rgba="0.7 0 0.5 1" />
+		</material>	
       </visual>
     </link>
 
+    <joint name="fingers_j" type="revolute">
+      <origin xyz="0 0 0 " rpy="0 0 0"/>
+      <parent link="uarm_palm_link"/>
+      <child link="virtual_link_3"/>
+      <limit effort="200" velocity="1.9634" lower="-1.134" upper="-0.349"/>
+    </joint>
 
-    <joint name="palm_left_finger_j" type="continuous">
+    <link name="virtual_link_3">    
+    </link>
+
+    <joint name="palm_left_finger_j" type="revolute">
       <origin xyz="0.035 -0.008 0 " rpy="0 ${M_PI/2} 0"/>
       <parent link="uarm_palm_link"/>
       <child link="uarm_left_finger_link"/>
+      <mimic joint="fingers_j" multiplier="-0.5" offset="${-0.349/2}"/>
+      <limit effort="200" velocity="1.9634" lower="0" upper="0.40"/>
     </joint>
-
-
-
 
     <link name="uarm_left_finger_link">
       <visual>
@@ -126,10 +210,12 @@
       </visual>
     </link>
 
-    <joint name="palm_right_finger_j" type="continuous">
+    <joint name="palm_right_finger_j" type="revolute">
       <origin xyz="0.035 0.008 0" rpy="0 ${M_PI/2} 0"/>
       <parent link="uarm_palm_link"/>
       <child link="uarm_right_finger_link"/>
+      <mimic joint="fingers_j" multiplier="0.5" offset="${0.349/2}"/>
+      <limit effort="200" velocity="1.9634" lower="-0.4" upper="0"/>
     </joint>
 
     <link name="uarm_right_finger_link">
@@ -141,17 +227,7 @@
         <material name="${color}" />
       </visual>
     </link>
-<!--
-    <link name="uarm_left_finger_link">
-      <visual>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <geometry>
-            <box size="0.001 0.001 0.001"/>
-        </geometry>
-        <material name="${color}" />
-      </visual>
-    </link>
--->
+
   </xacro:macro>
 
 </robot>

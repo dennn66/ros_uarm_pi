@@ -10,9 +10,6 @@
 #include <uarm_msgs/Joints.h>
 #include <std_msgs/Bool.h>
 
-#define DEG_TO_RAD 0.017453292519943295769236907684886
-#define RAD_TO_DEG 57.295779513082320876798154814105
-
 /****************  Macro definitions  ****************/
 #define ARM_A                   148    // upper arm
 #define ARM_B                   160    // lower arm
@@ -28,16 +25,11 @@
 #define ARM_ROTATION_MAX        1.570796327
 #define HAND_ROTATION_MIN       -1.570796327
 #define HAND_ROTATION_MAX       1.570796327
-#define HAND_ANGLE_OPEN         0.436332313
-#define HAND_ANGLE_CLOSE        1.221730476
-#define CATCH					0x01
-#define RELEASE					0x02
+#define HAND_ANGLE_OPEN         -1.134464014
+#define HAND_ANGLE_CLOSE        -0.349065851
 
 #define FIXED_OFFSET_L          0.314159265
 #define FIXED_OFFSET_R          0.628318531
-
-#define INIT_POS_L              0.645771823
-#define INIT_POS_R              0.436332313
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
