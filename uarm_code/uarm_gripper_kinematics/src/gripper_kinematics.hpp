@@ -7,7 +7,7 @@
 
 #include <ros/ros.h>
 #include <uarm_msgs/GripperPosition.h>
-#include <uarm_msgs/Joints.h>
+#include <sensor_msgs/JointState.h>
 #include <std_msgs/Bool.h>
 
 /****************  Macro definitions  ****************/
@@ -33,6 +33,7 @@
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
+
 class Gripper {
 	public:
 		Gripper();
@@ -43,8 +44,8 @@ class Gripper {
 		ros::Subscriber sub_gripper_position;
                 ros::Subscriber sub_gripper_state;
 
-		ros::Publisher pub_joints_position;
-
+//		ros::Publisher pub_joints_position;
+                ros::Publisher joint_msg_pub;
                 void chatterGripperPosition (const uarm_msgs::GripperPositionConstPtr &gripper_pos);
                 void chatterGripperState (const std_msgs::BoolConstPtr &gripper_state);
                 void setPosition(double _stretch, double _height, double _armRot, double _handRot); // 
@@ -57,6 +58,8 @@ class Gripper {
         double angleL;
         double armRot;
         double handRot;
+        float positions[5];
+        
 };
 
 

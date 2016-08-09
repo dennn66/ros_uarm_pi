@@ -15,7 +15,8 @@ Gripper::Gripper(){
 	sub_gripper_position = node.subscribe("uarm/set_gripper_position", 10, &Gripper::chatterGripperPosition, this);
         sub_gripper_state = node.subscribe("uarm/set_gripper_state", 10, &Gripper::chatterGripperState, this);
 
-	pub_joints_position = node.advertise<uarm_msgs::Joints>("uarm/target_position", 100);
+        joint_msg_pub = node.advertise<sensor_msgs::JointState>("uarm/target_joint_positions", 10);
+
 	ros::Duration(1).sleep(); // optional, to make sure no message gets lost
 	ROS_INFO("Servo controller is ready...");
 }
@@ -73,14 +74,15 @@ void Gripper::setPosition(double _stretch, double _height, double _armRot, doubl
 
 void Gripper::publishJoints()
 {
-    uarm_msgs::Joints msg;
 
-    if(gripperState)
-    {
-        msg.angle_grip = HAND_ANGLE_CLOSE;
-    } else {
-        msg.angle_grip = HAND_ANGLE_OPEN;
-    }
+    sensor_msgs::JointState joint_msg;
+
+    const std::string  joints[5] = {"base_body_j",
+        "body_upper_arm_j",
+        "forearm_wrist_j",
+        "wrist_palm_j",
+        "fingers_j"
+    };
 
     double servoR =  (angleR + FIXED_OFFSET_R - 1.570796327);        //
     ROS_INFO(" servoR  rad %f",  servoR);
@@ -88,13 +90,29 @@ void Gripper::publishJoints()
     double servoL =  (angleL + FIXED_OFFSET_L - 1.570796327);                       //
     ROS_INFO(" servoL  rad %f",  servoL);
 
-    msg.angle_rot = armRot;
-    msg.angle_hand_rot = handRot;
-    msg.angle_r = servoR;
-    msg.angle_l = servoL;
-    ROS_INFO("AngleR %f, AngleL %f, ArmRot %f, HandRot %f, gripper %f",
-                        servoR, servoL,armRot,handRot, msg.angle_grip );
-    pub_joints_position.publish(msg);
+    positions[0] = armRot; //"base_body_j"
+    positions[1] = servoL; //"body_upper_arm_j",
+    positions[2] = servoR; //"forearm_wrist_j"
+    positions[3] = handRot; //"wrist_palm_j"
+    if(gripperState)
+    {
+        positions[4] = HAND_ANGLE_CLOSE; //"fingers_j"
+
+    } else {
+        positions[4] = HAND_ANGLE_OPEN;  //"fingers_j"
+    }
+
+    joint_msg.header.stamp = ros::Time::now();
+
+    for (int name=0; name<5; name++){
+        joint_msg.name.push_back(joints[name].c_str());
+	joint_msg.position.push_back(positions[name]);
+        joint_msg.velocity.push_back(0.05);
+    }
+    joint_msg_pub.publish(joint_msg);
+    joint_msg.name.clear();
+    joint_msg.position.clear();
+    joint_msg.velocity.clear();
 }
 
 

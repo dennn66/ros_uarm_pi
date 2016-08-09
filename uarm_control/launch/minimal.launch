@@ -1,6 +1,6 @@
 <launch>
-   <arg name="urdf_file" default="$(find xacro)/xacro '$(find uarm_description)/urdf/robot.urdf.xacro'" />
-   <param name="robot_description" command="$(arg urdf_file)" />
+  <arg name="urdf_file" default="$(find xacro)/xacro '$(find uarm_description)/urdf/robot.urdf.xacro'" />
+  <param name="robot_description" command="$(arg urdf_file)" />
 
   <param name="joint_upper_limit" type="double" value="1.5" />
   <param name="joint_lower_limit" type="double" value="-1.5" />
@@ -8,7 +8,9 @@
 
   <node name="uarm_gripper_kinematics" pkg="uarm_gripper_kinematics" type="gripper_kinematics"/>
   <node name="uarm_controller" pkg="uarm_controller" type="controller"/>
+<!--
   <node name="uarm_joint_publisher" pkg="uarm_joint_publisher" type="joint_publisher"/>
+-->
   <node name="ros_pca9685" pkg="ros_pca9685" type="controller_sub"/>
 
 </launch>

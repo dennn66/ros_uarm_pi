@@ -4,113 +4,140 @@
 Controller::Controller(){
 
 	//Servo channels
-	node.param("servoR", channels[0], SERVO_R);
-	node.param("servoL", channels[1], SERVO_L);
-	node.param("servoRot", channels[2], SERVO_ROT);
-	node.param("servoHandRot", channels[3], SERVO_HAND_ROT);
-        node.param("servoHand", channels[4], SERVO_HAND);
- 
-    servo_type[0] =  pca9685_msgs::ServoState::D150A;
-    servo_type[1] =  pca9685_msgs::ServoState::D150A;
-    servo_type[2] =  pca9685_msgs::ServoState::D150A;
-    servo_type[3] =  pca9685_msgs::ServoState::D009A;
-    servo_type[4] =  pca9685_msgs::ServoState::D009A;
-
-    servo_needs_hold[0] =  1;
-    servo_needs_hold[1] =  1;
-    servo_needs_hold[2] =  0;
-    servo_needs_hold[3] =  0;
-    servo_needs_hold[4] =  0;
-        node.param("offsetL", offsetL, 0.33);
-        node.param("offsetR", offsetR, -0.20);
-
-	    target_position[0] = current_position[0] = 0+offsetR;
-	    target_position[1] = current_position[1] = 0+offsetL;
-	    target_position[2] = current_position[2] = 0;
-	    target_position[3] = current_position[3] = 0;
-	    target_position[4] = current_position[4] = HAND_ANGLE_OPEN;
+    node.param("servoRot", channels[SERVO_ROT], SERVO_ROT_PORT);
+    node.param("servoL", channels[SERVO_L], SERVO_L_PORT);
+    node.param("servoR", channels[SERVO_R], SERVO_R_PORT);
+    node.param("servoHandRot", channels[SERVO_HAND_ROT], SERVO_HAND_ROT_PORT);
+    node.param("servoHand", channels[SERVO_HAND], SERVO_HAND_PORT);
+    node.param("controllerRate", rate, RATE);
 
 
-	sub_joints_position = node.subscribe("uarm/target_position", 100, &Controller::chatterJointsState, this);
+    servo_type[SERVO_ROT] =  pca9685_msgs::ServoState::D150A;
+    servo_type[SERVO_L] =  pca9685_msgs::ServoState::D150A;
+    servo_type[SERVO_R] =  pca9685_msgs::ServoState::D150A;
+    servo_type[SERVO_HAND_ROT] =  pca9685_msgs::ServoState::D009A;
+    servo_type[SERVO_HAND] =  pca9685_msgs::ServoState::D009A;
 
-	pub_servo_position = node.advertise<pca9685_msgs::ServoState>("pca9685/servostate_to_controller", 100);
-	ros::Duration(1).sleep(); // optional, to make sure no message gets lost
-	ROS_INFO("Servo controller is ready...");
+    servo_needs_hold[SERVO_ROT] =  0;
+    servo_needs_hold[SERVO_L] =  1;
+    servo_needs_hold[SERVO_R] =  1;
+    servo_needs_hold[SERVO_HAND_ROT] =  0;
+    servo_needs_hold[SERVO_HAND] =  0;
+
+    node.param("offsetRot",  servo_offset[SERVO_ROT], 0.0);
+    node.param("offsetL",    servo_offset[SERVO_L], 0.33);
+    node.param("offsetR",    servo_offset[SERVO_R], -0.20);
+    node.param("offsetHand", servo_offset[SERVO_HAND_ROT], 0.0);
+    node.param("offsetGrip", servo_offset[SERVO_HAND], 0.0);
+
+    target_position[SERVO_ROT] = current_position[SERVO_ROT] = 0;
+    target_position[SERVO_L] = current_position[SERVO_L] = 0;
+    target_position[SERVO_R] = current_position[SERVO_R] = 0;
+    target_position[SERVO_HAND_ROT] = current_position[SERVO_HAND_ROT] = 0;
+    target_position[SERVO_HAND] = current_position[SERVO_HAND] = HAND_ANGLE_OPEN;
+
+    target_velocity[SERVO_ROT] = 0;
+    target_velocity[SERVO_L] = 0;
+    target_velocity[SERVO_R] = 0;
+    target_velocity[SERVO_HAND_ROT] = 0;
+    target_velocity[SERVO_HAND] = 0;
+
+
+    sub_joint_positions = node.subscribe("uarm/target_joint_positions", 100, &Controller::chatterTargetJoints, this);
+
+    joint_msg_pub = node.advertise<sensor_msgs::JointState>("uarm/uarm_joint_publisher", 1);
+
+    pub_servo_position = node.advertise<pca9685_msgs::ServoState>("pca9685/servostate_to_controller", 100);
+    ros::Duration(1).sleep(); // optional, to make sure no message gets lost
+    ROS_INFO("Servo controller is ready...");
 }
 
-void Controller::chatterJointsState (const uarm_msgs::JointsConstPtr &uarm_jnts){
+void Controller::chatterTargetJoints (const sensor_msgs::JointStatePtr &msg){
     ROS_INFO("Recieved uarm position");
-    pca9685_msgs::ServoState msg;
 
-    target_position[0] = uarm_jnts->angle_r+offsetR;
-    target_position[1] = uarm_jnts->angle_l+offsetL;
-    target_position[2] = uarm_jnts->angle_rot;
-    target_position[3] = uarm_jnts->angle_hand_rot;
-    target_position[4] = uarm_jnts->angle_grip;
+    const std::string  joints[ N_CHANNELS] = {
+        "base_body_j",
+        "body_upper_arm_j",
+        "forearm_wrist_j",
+        "wrist_palm_j",
+        "fingers_j"
+    };
 
+    for( int i = 0; i < msg->name.size(); i++)
+    {
+        for( int j = 0; j < N_CHANNELS; j++)
+        {
+            if(msg->name[i] == joints[j])
+            {
+                target_position[j] = msg->position[i];
+                target_velocity[j] = msg->velocity[i];
+            }
+        }
+    }
 }
 
-double Controller::getDelta(double current_pos, double target_pos){
-	double step;
-	
-	//#define ANGLE_PRECISION        0.001
-        //#define ANGLE_STEP        0.001
 
-	if(current_pos < target_pos){
-		if(target_pos - current_pos > ANGLE_PRECISION){
-			if(target_pos - current_pos > ANGLE_STEP){
-				step = ANGLE_STEP;
-			} else {
-				step = target_pos - current_pos;
-			}
-		} else {
-				step = 0;
-		}
-	} else {
-		if(current_pos - target_pos > ANGLE_PRECISION){
-			if(current_pos - target_pos > ANGLE_STEP){
-				step = -ANGLE_STEP;
-			} else {
-				step = target_pos - current_pos;
-			}
-		} else {
-				step = 0;
-		}
-	}
+double Controller::getDelta(double current_pos, double target_pos,  double maxstep){
+    double step;
 
-	return(step);
+    step = target_pos - current_pos;
+    step = constrain(step,-maxstep,maxstep);
+    if((step > -ANGLE_PRECISION) && (step < ANGLE_PRECISION)) step = 0; 
+    return(step);
 }
 
 
 void Controller::controller (){
 
+    const std::string  joints[N_CHANNELS] = {
+        "base_body_j",
+        "body_upper_arm_j",
+        "forearm_wrist_j",
+        "wrist_palm_j",
+        "fingers_j"
+    };
+    sensor_msgs::JointState joint_msg;
+
     pca9685_msgs::ServoState msg;
+    static ros::Time last_time =  ros::Time::now();
+    double dt = 0;
 
-	while (node.ok()){
-	    for(int port = 0; port < N_CHANNELS; port++){
-		msg.port_num = channels[port];  
-
-                double delta;
-                delta = getDelta(current_position[port], target_position[port]);
-                current_position[port] += delta;
-                if(delta != 0) {
-	            msg.servo_rot = current_position[port];
-		    msg.servo_type =  servo_type[port];
-	        } else {
-                    if(servo_needs_hold[port] == 0) {
-		        msg.servo_rot = current_position[port];
-		        msg.servo_type =  0;  // STOP SERVO
-                    } else {
-	                msg.servo_rot = current_position[port];
-		        msg.servo_type =  servo_type[port];
-                    }
+    while (node.ok()){
+        for(int port = 0; port < N_CHANNELS; port++){
+            msg.port_num = channels[port];  
+            dt = (ros::Time::now() - last_time).toSec();
+            last_time = ros::Time::now();
+            double delta;
+            delta = getDelta(current_position[port], target_position[port], target_velocity[port]*dt);
+            current_position[port] += delta;
+            if(delta != 0) {
+                msg.servo_rot = current_position[port]+servo_offset[port];
+                msg.servo_type =  servo_type[port];
+            } else {
+                if(servo_needs_hold[port] == 0) {
+                    msg.servo_rot = current_position[port]+servo_offset[port];
+                    msg.servo_type =  0;  // STOP SERVO
+                } else {
+                    msg.servo_rot = current_position[port]+servo_offset[port];
+                    msg.servo_type =  servo_type[port];
                 }
-		ROS_INFO("Servo %d [%f]",  msg.port_num, msg.servo_rot, msg.servo_type);
-		pub_servo_position.publish(msg);
-	    }
-		ros::spinOnce();
-		ros::Rate(25).sleep();
-	}
+            }
+        }	
+        ROS_INFO("Servo %d [%f]",  msg.port_num, msg.servo_rot, msg.servo_type);
+        pub_servo_position.publish(msg);
+
+        joint_msg.header.stamp = ros::Time::now();
+        for (int name=0; name < N_CHANNELS; name++){
+            joint_msg.name.push_back(joints[name].c_str());
+            joint_msg.position.push_back(current_position[name]);
+        }
+        joint_msg_pub.publish(joint_msg);
+        joint_msg.name.clear();
+        joint_msg.position.clear();
+
+        ros::spinOnce();
+        ros::Rate(rate).sleep();
+    }
 }
 
 
