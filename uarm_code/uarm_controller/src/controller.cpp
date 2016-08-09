@@ -4,11 +4,11 @@
 Controller::Controller(){
 
 	//Servo channels
-    node.param("servoRot", channels[SERVO_ROT], SERVO_ROT_PORT);
-    node.param("servoL", channels[SERVO_L], SERVO_L_PORT);
-    node.param("servoR", channels[SERVO_R], SERVO_R_PORT);
-    node.param("servoHandRot", channels[SERVO_HAND_ROT], SERVO_HAND_ROT_PORT);
-    node.param("servoHand", channels[SERVO_HAND], SERVO_HAND_PORT);
+    node.param("servoRot", channels[SERVO_ROT], ROT_PORT);
+    node.param("servoL", channels[SERVO_L], L_PORT);
+    node.param("servoR", channels[SERVO_R], R_PORT);
+    node.param("servoHandRot", channels[SERVO_HAND_ROT], HAND_ROT_PORT);
+    node.param("servoHand", channels[SERVO_HAND], HAND_PORT);
     node.param("controllerRate", rate, RATE);
 
 
@@ -30,17 +30,29 @@ Controller::Controller(){
     node.param("offsetHand", servo_offset[SERVO_HAND_ROT], 0.0);
     node.param("offsetGrip", servo_offset[SERVO_HAND], 0.0);
 
-    target_position[SERVO_ROT] = current_position[SERVO_ROT] = 0;
-    target_position[SERVO_L] = current_position[SERVO_L] = 0;
-    target_position[SERVO_R] = current_position[SERVO_R] = 0;
-    target_position[SERVO_HAND_ROT] = current_position[SERVO_HAND_ROT] = 0;
-    target_position[SERVO_HAND] = current_position[SERVO_HAND] = HAND_ANGLE_OPEN;
+    current_position[SERVO_ROT] = 0;
+    current_position[SERVO_L] = SERVO_L_INIT;
+    current_position[SERVO_R] = SERVO_R_INIT;
+    current_position[SERVO_HAND_ROT] = 0;
+    current_position[SERVO_HAND] = HAND_ANGLE_OPEN;
 
-    target_velocity[SERVO_ROT] = 0;
-    target_velocity[SERVO_L] = 0;
-    target_velocity[SERVO_R] = 0;
-    target_velocity[SERVO_HAND_ROT] = 0;
-    target_velocity[SERVO_HAND] = 0;
+    init_position[SERVO_ROT] = 0;
+    init_position[SERVO_L] = SERVO_L_INIT;
+    init_position[SERVO_R] = SERVO_R_INIT;
+    init_position[SERVO_HAND_ROT] = 0;
+    init_position[SERVO_HAND] = HAND_ANGLE_OPEN;
+
+    target_position[SERVO_ROT] = 0;
+    target_position[SERVO_L] = SERVO_L_INIT;
+    target_position[SERVO_R] = SERVO_R_INIT;
+    target_position[SERVO_HAND_ROT] = 0;
+    target_position[SERVO_HAND] = HAND_ANGLE_OPEN;
+
+    target_velocity[SERVO_ROT] = 0.1;
+    target_velocity[SERVO_L] = 0.1;
+    target_velocity[SERVO_R] = 0.1;
+    target_velocity[SERVO_HAND_ROT] = 0.1;
+    target_velocity[SERVO_HAND] = 0.1;
 
 
     sub_joint_positions = node.subscribe("uarm/target_joint_positions", 100, &Controller::chatterTargetJoints, this);
@@ -81,8 +93,12 @@ double Controller::getDelta(double current_pos, double target_pos,  double maxst
     double step;
 
     step = target_pos - current_pos;
-    step = constrain(step,-maxstep,maxstep);
     if((step > -ANGLE_PRECISION) && (step < ANGLE_PRECISION)) step = 0; 
+    //ROS_INFO("target_pos [%f] current_pos[%f] step[%f] maxstep[%f] ", target_pos, current_pos, step, maxstep);
+
+    step = constrain(step,-maxstep,maxstep);
+    //ROS_INFO("step[%f] ", step);
+
     return(step);
 }
 
@@ -103,10 +119,11 @@ void Controller::controller (){
     double dt = 0;
 
     while (node.ok()){
+        dt = (ros::Time::now() - last_time).toSec();
+        last_time = ros::Time::now();
+
         for(int port = 0; port < N_CHANNELS; port++){
             msg.port_num = channels[port];  
-            dt = (ros::Time::now() - last_time).toSec();
-            last_time = ros::Time::now();
             double delta;
             delta = getDelta(current_position[port], target_position[port], target_velocity[port]*dt);
             current_position[port] += delta;
@@ -114,7 +131,9 @@ void Controller::controller (){
                 msg.servo_rot = current_position[port]+servo_offset[port];
                 msg.servo_type =  servo_type[port];
             } else {
-                if(servo_needs_hold[port] == 0) {
+                if(servo_needs_hold[port] == 0 || 
+                     ((current_position[port]-init_position[port] > -ANGLE_PRECISION )&&
+                           (current_position[port]-init_position[port] < ANGLE_PRECISION))) {
                     msg.servo_rot = current_position[port]+servo_offset[port];
                     msg.servo_type =  0;  // STOP SERVO
                 } else {
@@ -122,9 +141,9 @@ void Controller::controller (){
                     msg.servo_type =  servo_type[port];
                 }
             }
+            //ROS_INFO("Servo %d [%f] - %d",  msg.port_num, msg.servo_rot, msg.servo_type);
+            pub_servo_position.publish(msg);
         }	
-        ROS_INFO("Servo %d [%f]",  msg.port_num, msg.servo_rot, msg.servo_type);
-        pub_servo_position.publish(msg);
 
         joint_msg.header.stamp = ros::Time::now();
         for (int name=0; name < N_CHANNELS; name++){
